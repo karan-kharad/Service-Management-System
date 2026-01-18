@@ -32,7 +32,7 @@ class RepairJob(models.Model):
     device_image = models.ImageField(upload_to='device_images/', blank=True, null=True)
     problem_description = models.TextField(blank=True, null=True)
     status = models.CharField(choices=[('pending', 'Pending'), ('in_progress', 'In Progress'), ('completed', 'Completed')], default='pending')
-    assigned_engineer = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.CASCADE)
+    assigned_engineer = models.ForeignKey(CustomUser, related_name='jobs', blank=True, null=True, on_delete=models.CASCADE)
     created_by = models.ForeignKey(CustomUser, related_name='created_jobs', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -49,5 +49,8 @@ class ReplacedParts(models.Model):
     def __str__(self):
         return f"{self.part_name} for RepairJob {self.repair_job.id}"
     
-
-    
+class Otp(models.Model):
+    phone = models.CharField(max_length=13, blank=True, null=True)
+    otp = models.CharField(max_length=6)
+    exprie_at = models.DateTimeField(auto_now=False, auto_now_add=False)
+    verified = models.BooleanField(default='not verified')
