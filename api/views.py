@@ -1,55 +1,48 @@
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from api.models import *
-from api.serializers import RepairJobSerializer,CustomerSerializer,CustomUserSerializer,JobInfoSerializer
+from api.serializers import RepairJobSerializer,CustomerSerializer,CustomUserSerializer,JobInfoSerializer,CreateRepairJobSerializer
 
 # Create your views here.
 
-class JobListView(generics.ListCreateAPIView):
+class JobListView(generics.ListAPIView):
     queryset = RepairJob.objects.all()
     serializer_class = RepairJobSerializer
 
+class CreateJobView(generics.CreateAPIView):
+    queryset = RepairJob.objects.all()
+    serializer_class = CreateRepairJobSerializer
 
-class UserJobListView(generics.ListCreateAPIView):
+
+class UserJobListView(generics.ListAPIView):
    serializer_class = RepairJobSerializer
    permission_classes = [IsAuthenticated]
 
    def get_queryset(self):
        return RepairJob.objects.filter(created_by= self.request.user)
     
-class CustomerListView(generics.ListCreateAPIView):
+class CustomerListView(generics.ListAPIView):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
-
-# @api_view(['GET'])
-# def customer_list(request):
-#     customers = Customer.objects.all()
-#     serializers = CustomerSerializer(customers, many = True)
-#     return Response(serializers.data)
-
 
 class JobDetilsView(generics.RetrieveAPIView):
     queryset = RepairJob.objects.all()
     serializer_class = RepairJobSerializer
-
-
-class UserListView(generics.ListCreateAPIView):
+class UserListView(generics.ListAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
 
-class JobInfoView(generics.ListCreateAPIView):
-    queryset = RepairJob.objects.all()
-    serializer_class = JobInfoSerializer
+class JobInfo(APIView):
+    def get(slef,request):
+        jobs = RepairJob.objects.all()
+        serializers = JobInfoSerializer({
+            'jobs': jobs,
+            'jobs_count': jobs.count(),
+        })
+        return Response(serializers.data)        
 
-# @api_view(['GET'])
-# def jobinfo(request):
-#     jobs = RepairJob.objects.all()
-#     serializers = JobInfoSerializer({
-#         'jobs': jobs,
-#         'jobs_count': jobs.count(),
-#     })
-#     return Response(serializers.data)

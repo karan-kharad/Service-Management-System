@@ -24,6 +24,7 @@ class RepairJob(models.Model):
     customer = models.ForeignKey(Customer,related_name='repair_jobs', on_delete=models.CASCADE)
     customer_name = models.CharField(max_length=255)
     customer_phone = models.CharField(max_length=13, blank=True, null=True)
+    customer_email = models.EmailField(blank=True, null=True)
     address = models.TextField()
     device_type = models.CharField(max_length=100, blank=True, null=True)
     device_brand = models.CharField(max_length=100, blank=True, null=True)
