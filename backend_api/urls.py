@@ -22,6 +22,7 @@ from django.views.static import serve
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-     path('api/', include('api.urls')),
+    path('api/', include('api.urls')),
+    path('silk/', include('silk.urls', namespace='silk')) # for qurey profileing 
 ]
 
