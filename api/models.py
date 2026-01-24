@@ -54,3 +54,4 @@ class Otp(models.Model):
     otp = models.CharField(max_length=6)
     exprie_at = models.DateTimeField(auto_now=False, auto_now_add=False)
     verified = models.BooleanField(default='not verified')
+    

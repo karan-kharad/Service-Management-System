@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import CustomUser,Customer,RepairJob,ReplacedParts,Otp
 
-
 class RepairJobSerializer(serializers.ModelSerializer):
     class Meta:
        
@@ -34,3 +33,9 @@ class CustomerSerializer(serializers.ModelSerializer):
             'customer_phone',
             'customer_email'
         )
+
+
+class JobInfoSerializer(serializers.Serializer):
+    # we get all job, count of jobs, number of parst change
+    jobs = RepairJobSerializer(many= True)
+    jobs_count = serializers.IntegerField()
