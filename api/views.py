@@ -14,6 +14,7 @@ class JobListView(generics.ListAPIView):
     queryset = RepairJob.objects.all()
     serializer_class = RepairJobSerializer
 
+# this for posting the job
 class CreateJobView(generics.CreateAPIView):
     queryset = RepairJob.objects.all()
     serializer_class = CreateRepairJobSerializer

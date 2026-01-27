@@ -19,6 +19,8 @@ class Customer(models.Model):
    address = models.TextField(blank=True, null=True)
    created_at = models.DateTimeField(auto_now_add=True)
     
+
+    
 class RepairJob(models.Model):
     #id = models.UUIDField(primary_key=True)
     customer = models.ForeignKey(Customer,related_name='repair_jobs', on_delete=models.CASCADE)

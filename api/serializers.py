@@ -65,12 +65,13 @@ class CreateRepairJobSerializer(serializers.ModelSerializer):
             'created_by',
             'created_at'
         )
+        read_only_fields = ('created_by', 'created_at')
 
     def create(self,validated_data):
             customer = Customer.objects.create(
                 customer_name = validated_data.get('customer_name'),
                 customer_phone = validated_data.get('customer_phone'),
-                customer_email = validated_data.get('email_name'),
+                customer_email = validated_data.get('customer_email'),
                 address = validated_data.get('address'),
             )
 
