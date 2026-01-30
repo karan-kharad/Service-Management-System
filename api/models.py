@@ -1,17 +1,38 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser,Group,Permission
 
-# Create your models here.
+0# Create your models here.
 class CustomUser(AbstractUser):
 
-    username = models.CharField(max_length=150, unique=True)
-    email = models.EmailField(unique=True)
-    phone = models.CharField(max_length=13, blank=True, null=True)
-    is_active = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.username
+    ROLES_CHOICES = [
+        ("admin","admin"),
+        ("onwer","onwer"),
+        ("engineer","engineer"),
+        ]
     
+    role = models.CharField(max_length=150, choices=ROLES_CHOICES, default='engineer')
+    # username = models.CharField(max_length=150, unique=True)
+    # email = models.EmailField(unique=True)
+    # phone = models.CharField(max_length=13, blank=True, null=True)
+    # is_active = models.BooleanField(default=True)
+
+    # def __str__(self):
+    #     return self.username
+
+class AdminProfile(models.Model):
+    user = models.OneToOneField(CustomUser, related_name='admin', on_delete=models.CASCADE)
+    admin_key = models.CharField(max_length=50,blank=True,null=True)
+
+class OnwerProfile(models.Model):
+    user = models.OneToOneField(CustomUser, related_name="owner", on_delete=models.CASCADE)
+    shop_licenes_no =models.CharField(max_length=50,blank=True,null=True)
+    shop_name = models.CharField(max_length=150)
+
+class EngineerProfile(models.Model):
+    user = models.OneToOneField(CustomUser, related_name='engineer', on_delete=models.CASCADE)
+    onwer = models.ForeignKey(OnwerProfile, on_delete=models.CASCADE)
+    employer_id = models.CharField(max_length=50,unique=True)
+
 class Customer(models.Model):
    customer_name = models.CharField(max_length= 255, blank=True, null=True)
    customer_phone = models.CharField(max_length=13, blank=True, null=True)
