@@ -1,24 +1,16 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser,Group,Permission
 
-0# Create your models here.
+# Create your models here.
 class CustomUser(AbstractUser):
 
     ROLES_CHOICES = [
         ("admin","admin"),
-        ("onwer","onwer"),
+        ("owner","owner"),
         ("engineer","engineer"),
         ]
     
     role = models.CharField(max_length=150, choices=ROLES_CHOICES, default='engineer')
-    # username = models.CharField(max_length=150, unique=True)
-    # email = models.EmailField(unique=True)
-    # phone = models.CharField(max_length=13, blank=True, null=True)
-    # is_active = models.BooleanField(default=True)
-
-    # def __str__(self):
-    #     return self.username
-
 class AdminProfile(models.Model):
     user = models.OneToOneField(CustomUser, related_name='admin', on_delete=models.CASCADE)
     admin_key = models.CharField(max_length=50,blank=True,null=True)

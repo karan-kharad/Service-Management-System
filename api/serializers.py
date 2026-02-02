@@ -104,59 +104,84 @@ class CreateRepairJobSerializer(serializers.ModelSerializer):
     
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only = True)
+    password = serializers.CharField(write_only=True)
     role = serializers.ChoiceField(choices=CustomUser.ROLES_CHOICES)
-    admin_key = serializers.CharField(required = False, allow_blank = True)
-    shop_licenes_no = serializers.CharField( required =False, allow_blank=True)
-    shop_name = serializers.CharField(required= False, allow_blank=True)
-    employer_id = serializers.CharField(required= False, allow_blank= True)
+
+    admin_key = serializers.CharField(required=False, allow_blank=True)
+    shop_licenes_no = serializers.CharField(required=False, allow_blank=True)
+    shop_name = serializers.CharField(required=False, allow_blank=True)
+    employer_id = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = CustomUser
         fields = [
             'username',
-            'password',
             'email',
+            'password',
             'role',
             'admin_key',
             'shop_licenes_no',
             'shop_name',
-            'employer_id'
-            
+            'employer_id',
         ]
 
     def validate(self, data):
         role = data.get('role')
+
         if role == 'admin' and not data.get('admin_key'):
-            return serializers.ValidationError({"admin_key" :'admin key required for the admin role'})
-        elif role == 'owner' and not data.get('shop_licenes_no','shop_name'):
-            return serializers.ValidationError({"shop_licenes_no":'shop licenes is required foe owner role'})
-        elif role == 'engineer' and not data.get('employer_id'):
-            raise serializers.ValidationError({"employer_id":' employer_id is required foe owner role'})
+            raise serializers.ValidationError({
+                "admin_key": "Admin key required for admin role"
+            })
+
+        if role == 'owner' and (not data.get('shop_licenes_no') or not data.get('shop_name')):
+            raise serializers.ValidationError({
+                "shop_licenes_no": "Shop license and shop name required"
+            })
+
+        if role == 'engineer' and not data.get('employer_id'):
+            raise serializers.ValidationError({
+                "employer_id": "Employer ID required"
+            })
+
         return data
-       
+
     def create(self, validated_data):
         role = validated_data.pop('role')
-        profile_data={
-            'admin_key' : validated_data.pop('admin_key'),
-            'shop_licenes_no': validated_data.pop('shop_licenes_no'),
-            'employer_id': validated_data.pop('employer_id'),
-            'shop_name': validated_data.pop('shop_name')
-        }
-        user = CustomUser.objects.create_user(**validated_data, role = role)
+
+        admin_key = validated_data.pop('admin_key', None)
+        shop_licenes_no = validated_data.pop('shop_licenes_no', None)
+        shop_name = validated_data.pop('shop_name', None)
+        employer_id = validated_data.pop('employer_id', None)
+
+        user = CustomUser.objects.create_user(
+            **validated_data,
+            role=role
+        )
+
         if role == 'admin':
             AdminProfile.objects.create(
-                user = user,
-                admin_key = profile_data['admin_key']
+                user=user,
+                admin_key=admin_key
             )
+        
         elif role == 'owner':
             OnwerProfile.objects.create(
-                user = user,
-                shope_licenes_no = profile_data['shope_lincenes_no']
+                user=user,
+                shop_licenes_no=shop_licenes_no,
+                shop_name=shop_name
             )
-        elif role == 'enginner':
+
+        elif role == 'engineer':
             EngineerProfile.objects.create(
-                user = user,
-                employer_id = profile_data['employer_id']
+                user=user,
+                employer_id=employer_id
             )
+
         return user
+
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField(write_only = True)
+
+    
