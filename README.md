@@ -11,17 +11,19 @@ This project provides a comprehensive backend API for computer repair shops to m
 - **User Management**: Custom user model with roles for staff and engineers
 - **Customer Management**: Store customer details including contact information and address
 - **Repair Job Tracking**: Create, update, and track repair jobs with device details, status, and assignments
-- **Parts Management**: Record replaced parts with costs for each repair job
+- **Parts Management**: Record replaced parts with costs for each repair job (Model exists, API pending)
 - **Status Tracking**: Monitor repair progress (pending, in progress, completed)
 - **Image Upload**: Support for device images
 - **RESTful API**: Built with Django REST Framework for easy integration
+- **Query Profiling**: Integration with Django Silk for performance monitoring
 
 ## Tech Stack
 
 - **Backend**: Django 6.0.1
 - **API Framework**: Django REST Framework
+- **Authentication**: JWT (JSON Web Tokens)
 - **Database**: PostgreSQL
-- **Authentication**: Django's built-in authentication with custom user model
+- **Documentation**: Markdown
 
 ## Installation
 
@@ -81,42 +83,58 @@ The API will be available at `http://127.0.0.1:8000/`
 
 Access the Django admin panel at `http://127.0.0.1:8000/admin/` using the superuser credentials.
 
+### Silk Profiler
+
+Access the Silk profiling dashboard at `http://127.0.0.1:8000/silk/` (if configured).
+
 ## API Endpoints
 
-*(Note: API endpoints are planned but not yet implemented. The following are the intended endpoints:)*
+### Authentication
+- `POST /api/auth/register/` - Register a new user
+- `POST /api/auth/login/` - Login and retrieve JWT tokens
+- `POST /api/token/` - Obtain JWT token pair
+- `POST /api/token/refresh/` - Refresh JWT access token
 
-- `GET /api/customers/` - List all customers
-- `POST /api/customers/` - Create a new customer
-- `GET /api/repair-jobs/` - List all repair jobs
-- `POST /api/repair-jobs/` - Create a new repair job
-- `PUT /api/repair-jobs/{id}/` - Update repair job status
-- `GET /api/replaced-parts/` - List replaced parts
-- `POST /api/replaced-parts/` - Add replaced part to a repair job
+### Jobs
+- `GET /api/job/` - List all repair jobs
+- `POST /api/job/create` - Create a new repair job
+- `GET /api/job/<id>/` - Retrieve details of a specific repair job
+- `GET /api/user-job/` - List repair jobs created by the authenticated user
+- `GET /api/jobinfo/` - Get job statistics
+
+### Customers
+- `GET /api/customer/` - List all customers
+
+### Users
+- `GET /api/user/` - List all users
 
 ## Models
 
 ### CustomUser
-- username, email, phone
+- Roles: `admin`, `owner`, `engineer`
 - Extends Django's AbstractUser
 
 ### Customer
-- customer_name, customer_phone, customer_email, address
-- created_at timestamp
+- `customer_name`, `customer_phone`, `customer_email`, `address`
+- `created_at` timestamp
 
 ### RepairJob
-- customer (ForeignKey)
-- device details (type, brand, model, serial number)
-- device_image
-- problem_description
-- status (pending, in_progress, completed)
-- assigned_engineer (ForeignKey to CustomUser)
-- created_by (ForeignKey to CustomUser)
-- timestamps
+- `customer` (ForeignKey)
+- Device details: `device_type`, `device_brand`, `device_model`, `serial_number`, `device_image`
+- `problem_description`
+- `status` (pending, in_progress, completed)
+- `assigned_engineer` (ForeignKey to CustomUser)
+- `created_by` (ForeignKey to CustomUser)
+- Timestamps: `created_at`, `updated_at`
 
 ### ReplacedParts
-- repair_job (ForeignKey)
-- part_name, cost
-- replaced_at timestamp
+- `repair_jab` (ForeignKey to RepairJob)
+- `part_name`, `cost`
+- `repaled_at` timestamp
+
+### Otp
+- `phone`, `otp`
+- `exprie_at`, `verified`
 
 ## Contributing
 
