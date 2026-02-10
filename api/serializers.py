@@ -44,13 +44,10 @@ class CustomerSerializer(serializers.ModelSerializer):
             'customer_email'
         )
 
-
 class JobInfoSerializer(serializers.Serializer):
     # we get all job, count of jobs, number of parst change
     jobs = RepairJobSerializer(many= True)
     jobs_count = serializers.IntegerField()
-
-
 
 class CreateRepairJobSerializer(serializers.ModelSerializer):
     customer_name = serializers.CharField()
@@ -102,7 +99,6 @@ class CreateRepairJobSerializer(serializers.ModelSerializer):
             )
             return repair_job
     
-
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     role = serializers.ChoiceField(choices=CustomUser.ROLES_CHOICES)
@@ -178,10 +174,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             )
 
         return user
-
-
+    
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField(write_only = True)
-
-    

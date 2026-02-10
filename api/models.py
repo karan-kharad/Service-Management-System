@@ -31,9 +31,7 @@ class Customer(models.Model):
    customer_email = models.EmailField(blank=True, null=True)
    address = models.TextField(blank=True, null=True)
    created_at = models.DateTimeField(auto_now_add=True)
-    
-
-    
+       
 class RepairJob(models.Model):
     #id = models.UUIDField(primary_key=True)
     customer = models.ForeignKey(Customer,related_name='repair_jobs', on_delete=models.CASCADE)
@@ -70,4 +68,3 @@ class Otp(models.Model):
     otp = models.CharField(max_length=6)
     exprie_at = models.DateTimeField(auto_now=False, auto_now_add=False)
     verified = models.BooleanField(default='not verified')
-    

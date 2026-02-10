@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view , permission_classes
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework import generics
@@ -10,6 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from api.models import *
 from api.serializers import *
 from django.contrib.auth import authenticate
+from rest_framework.permissions import AllowAny, IsAdminUser
 # Create your views here.
 
 class RegisterView(generics.CreateAPIView):
@@ -17,6 +18,7 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
 
 class LoginView(APIView):
+
     def post(self,request):
 
         serializer = LoginSerializer(data=request.data)
@@ -62,9 +64,17 @@ class CustomerListView(generics.ListAPIView):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
 
-class JobDetilsView(generics.RetrieveAPIView):
+class JobDetilsView(generics.RetrieveUpdateDestroyAPIView):
     queryset = RepairJob.objects.all()
     serializer_class = RepairJobSerializer
+
+    def get_permissions(self):
+        if self.request.method in ['PUT','PATCH','DELETE'] :
+            self.permission_classes=[IsAdminUser]
+        else:
+            self.permission_classes = [AllowAny]
+        return super().get_permissions()
+
 class UserListView(generics.ListAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer

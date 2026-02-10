@@ -50,7 +50,6 @@ class UserRipairJobTestCase(TestCase):
         jobs = response.json()
         self.assertTrue(all(RepairJob['user'] == user.id for order in jobs))
 
-
     def test_user_order_list_unauthenticated(self):
         response = self.client.get(reverse('user-job'))
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
