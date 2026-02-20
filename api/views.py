@@ -11,16 +11,18 @@ from api.models import *
 from api.serializers import *
 from django.contrib.auth import authenticate
 from rest_framework.permissions import AllowAny, IsAdminUser
+from .permission import IsOwner
 # Create your views here.
 
 class RegisterView(generics.CreateAPIView):
+    permission_classes = [AllowAny]  
     queryset = CustomUser.objects.all()
     serializer_class = RegisterSerializer
 
 class LoginView(APIView):
-
+    permission_classes = [AllowAny]  
     def post(self,request):
-
+        print("here")
         serializer = LoginSerializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
@@ -51,8 +53,15 @@ class JobListView(generics.ListAPIView):
 class CreateJobView(generics.CreateAPIView):
     queryset = RepairJob.objects.all()
     serializer_class = CreateRepairJobSerializer
+    permission_classes = [IsAuthenticated, IsOwner]
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        repair_job = serializer.save()
 
+        output_serializer = RepairJobSerializer(repair_job)
+        return Response(output_serializer.data, status=status.HTTP_201_CREATED)
 class UserJobListView(generics.ListAPIView):
    serializer_class = RepairJobSerializer
    permission_classes = [IsAuthenticated]

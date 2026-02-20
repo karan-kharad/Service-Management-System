@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractUser,Group,Permission
 
 # Create your models here.
 class CustomUser(AbstractUser):
-
     ROLES_CHOICES = [
         ("admin","admin"),
         ("owner","owner"),
@@ -24,29 +23,33 @@ class EngineerProfile(models.Model):
     user = models.OneToOneField(CustomUser, related_name='engineer', on_delete=models.CASCADE)
     onwer = models.ForeignKey(OnwerProfile, on_delete=models.CASCADE)
     employer_id = models.CharField(max_length=50,unique=True)
-
 class Customer(models.Model):
-   customer_name = models.CharField(max_length= 255, blank=True, null=True)
-   customer_phone = models.CharField(max_length=13, blank=True, null=True)
-   customer_email = models.EmailField(blank=True, null=True)
-   address = models.TextField(blank=True, null=True)
-   created_at = models.DateTimeField(auto_now_add=True)
+    customer_name = models.CharField(max_length=255)
+    customer_phone = models.CharField(max_length=13, unique=True)
+    customer_email = models.EmailField(blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+            return f"{self.customer_name} - {self.customer_phone}"
        
 class RepairJob(models.Model):
-    #id = models.UUIDField(primary_key=True)
-    customer = models.ForeignKey(Customer,related_name='repair_jobs', on_delete=models.CASCADE)
-    customer_name = models.CharField(max_length=255)
-    customer_phone = models.CharField(max_length=13, blank=True, null=True)
-    customer_email = models.EmailField(blank=True, null=True)
-    address = models.TextField()
+    STATUS_CHOICES = [
+    ("COLLECTED", "Collected"),
+    ("DIAGNOSING", "Diagnosing"),
+    ("REPAIRING", "Repairing"),
+    ("READY", "Ready for Delivery"),
+    ("DELIVERED", "Delivered"),
+]
+    customer = models.ForeignKey(Customer,related_name='repair_jobs',on_delete=models.PROTECT)
     device_type = models.CharField(max_length=100, blank=True, null=True)
     device_brand = models.CharField(max_length=100, blank=True, null=True)
     device_model = models.CharField(max_length=100, blank=True, null=True)
     serial_number = models.CharField(max_length=100, blank=True, null=True, unique=True)
     device_image = models.ImageField(upload_to='device_images/', blank=True, null=True)
     problem_description = models.TextField(blank=True, null=True)
-    status = models.CharField(choices=[('pending', 'Pending'), ('in_progress', 'In Progress'), ('completed', 'Completed')], default='pending')
-    assigned_engineer = models.ForeignKey(CustomUser, related_name='jobs', blank=True, null=True, on_delete=models.CASCADE)
+    status = models.CharField(choices=STATUS_CHOICES, default="COLLECTED", max_length=20)
+    assigned_engineer = models.ForeignKey(CustomUser, related_name='jobs', blank=True, null=True, on_delete=models.SET_NULL)
     created_by = models.ForeignKey(CustomUser, related_name='created_jobs', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -64,7 +67,19 @@ class ReplacedParts(models.Model):
         return f"{self.part_name} for RepairJob {self.repair_job.id}"
     
 class Otp(models.Model):
-    phone = models.CharField(max_length=13, blank=True, null=True)
-    otp = models.CharField(max_length=6)
-    exprie_at = models.DateTimeField(auto_now=False, auto_now_add=False)
-    verified = models.BooleanField(default='not verified')
+    OTP_TYPE_CHOCIE = [
+         ("REGISTRATION", "Registration"),
+        ("DELIVERY", "Delivery"),
+    ]
+
+    reapir_job = models.ForeignKey(RepairJob,
+        on_delete=models.CASCADE,
+        related_name='otp'
+    )
+
+    otp_type = models.CharField(max_length=28,choices=OTP_TYPE_CHOCIE)
+    otp = models.CharField(max_length=128)
+    attempts = models.IntegerField(default=0)
+    expries_at = models.DateTimeField(auto_now=False, auto_now_add=False)
+    verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now=True)

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import *
-
+from .services import create_registration_otp, create_delivery_otp
+from django.db import transaction
 class RepairJobSerializer(serializers.ModelSerializer):
     class Meta:
        
@@ -35,6 +36,54 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
         return data
 
+class JobInfoSerializer(serializers.Serializer):
+    # we get all job, count of jobs, number of parst change
+    jobs = RepairJobSerializer(many= True)
+    jobs_count = serializers.IntegerField()
+
+class CreateRepairJobSerializer(serializers.ModelSerializer):
+    customer_name = serializers.CharField(write_only=True)
+    customer_phone = serializers.CharField(write_only=True)
+    customer_email = serializers.EmailField(required=False, allow_blank=True, write_only=True)
+    address = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    class Meta:
+       
+        model = RepairJob
+        fields = (
+            'customer_name',
+            'customer_phone',
+            'customer_email',
+            'address',
+            'device_type',
+            'device_brand',
+            'device_model',
+            'serial_number',
+            'problem_description',
+        )
+
+    def create(self,validated_data):
+            with transaction.atomic():
+                customer_name = validated_data.pop("customer_name")
+                customer_phone = validated_data.pop("customer_phone")
+                customer_email = validated_data.pop("customer_email", None)
+                address = validated_data.pop("address", None)
+
+                customer, created = Customer.objects.get_or_create(
+                    customer_phone = customer_phone,
+                    defaults={
+                        "customer_name": customer_name,
+                        "customer_email": customer_email,
+                        "address": address
+                    }
+                )
+                repair_job = RepairJob.objects.create(
+                    customer = customer,
+                    created_by = self.context['request'].user,
+                    **validated_data
+                )
+            return repair_job
+    
+
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model =  Customer
@@ -44,61 +93,24 @@ class CustomerSerializer(serializers.ModelSerializer):
             'customer_email'
         )
 
-class JobInfoSerializer(serializers.Serializer):
-    # we get all job, count of jobs, number of parst change
-    jobs = RepairJobSerializer(many= True)
-    jobs_count = serializers.IntegerField()
-
-class CreateRepairJobSerializer(serializers.ModelSerializer):
-    customer_name = serializers.CharField()
-    customer_phone = serializers.CharField()
-    customer_email = serializers.EmailField()
-    address = serializers.CharField()
+class  RepairJobSerializer(serializers.ModelSerializer):
+    customer = CustomerSerializer(read_only=True)
     class Meta:
-       
         model = RepairJob
         fields = (
-            'customer_name',
-            'customer_phone',
-            'address',
+            'id',
+            'customer',
             'device_type',
-            'customer_email',
             'device_brand',
             'device_model',
             'serial_number',
             'problem_description',
             'status',
-            'assigned_engineer',
             'created_by',
-            'created_at'
+            'assigned_engineer',
+
         )
-        read_only_fields = ('created_by', 'created_at')
 
-    def create(self,validated_data):
-            customer = Customer.objects.create(
-                customer_name = validated_data.get('customer_name'),
-                customer_phone = validated_data.get('customer_phone'),
-                customer_email = validated_data.get('customer_email'),
-                address = validated_data.get('address'),
-            )
-
-            repair_job= RepairJob.objects.create(
-
-                customer = customer,
-                customer_name= customer.customer_name ,
-                customer_phone= customer.customer_phone ,
-                customer_email = customer.customer_email ,
-                address=customer.address,
-                device_type= validated_data.get('device_type'),
-                device_brand=validated_data.get('device_brand'),
-                device_model=validated_data.get('device_model'),
-                serial_number=validated_data.get('serial_number'),
-                problem_description=validated_data.get('problem_description'),
-                assigned_engineer=validated_data.get('assigned_engineer'),
-                created_by=self.context['request'].user
-            )
-            return repair_job
-    
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     role = serializers.ChoiceField(choices=CustomUser.ROLES_CHOICES)
