@@ -81,6 +81,8 @@ class CreateRepairJobSerializer(serializers.ModelSerializer):
                     created_by = self.context['request'].user,
                     **validated_data
                 )
+                row_otp = create_registration_otp(repair_job)
+                repair_job._registration_otp = row_otp  # temporary attribute to hold the OTP for response
             return repair_job
     
 

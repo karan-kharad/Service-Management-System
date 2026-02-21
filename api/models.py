@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser,Group,Permission
-
+from datetime import *
 # Create your models here.
 class CustomUser(AbstractUser):
     ROLES_CHOICES = [
@@ -80,6 +80,13 @@ class Otp(models.Model):
     otp_type = models.CharField(max_length=28,choices=OTP_TYPE_CHOCIE)
     otp = models.CharField(max_length=128)
     attempts = models.IntegerField(default=0)
-    expries_at = models.DateTimeField(auto_now=False, auto_now_add=False)
+    locked_until = models.DateTimeField(blank=True, null=True)
+    expires_at = models.DateTimeField(auto_now=False, auto_now_add=False)
     verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now=True)
+
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+    
+    def is_locked(self):
+        return self.locked_until and timezone.now() < self.locked_until
