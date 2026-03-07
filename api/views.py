@@ -16,6 +16,7 @@ from .utils import varify_otp
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Otp
+
 # Create your views here.
 
 class RegisterView(generics.CreateAPIView):

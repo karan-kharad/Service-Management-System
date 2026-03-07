@@ -3,6 +3,8 @@ from datetime import timedelta
 from django.db import transaction
 from .models import Otp
 from .utils import generate_otp, hash_otp, varify_otp
+from django.core.mail import send_mail
+from django.conf import settings
 
 def create_registration_otp(reapir_job):
     row_otp = generate_otp()
@@ -39,3 +41,19 @@ def create_delivery_otp(reapir_job):
         },
     )
     return raw_otp
+
+
+
+def send_otp_email(email,otp):
+
+    subject = "Your OTP for Device Repair Registration"
+
+    message = f"Hello,\n\nYour OTP for registering your device repair job is: {otp}\n\nThis OTP is valid for 5 minutes.\n\nThank you for using our service!"
+
+    send_mail(
+        subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,
+        [email],
+        fail_silently=False,
+)

@@ -2,6 +2,8 @@ from rest_framework import serializers
 from .models import *
 from .services import create_registration_otp, create_delivery_otp
 from django.db import transaction
+from .services import send_otp_email
+
 class RepairJobSerializer(serializers.ModelSerializer):
     class Meta:
        
@@ -82,6 +84,11 @@ class CreateRepairJobSerializer(serializers.ModelSerializer):
                     **validated_data
                 )
                 row_otp = create_registration_otp(repair_job)
+
+                # send OTP eamil
+                if customer.customer_email:
+                    send_otp_email(customer.customer_email, row_otp)
+
                 repair_job._registration_otp = row_otp  # temporary attribute to hold the OTP for response
             return repair_job
     

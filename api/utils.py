@@ -1,6 +1,7 @@
 import secrets
 from django.contrib.auth.hashers import make_password, check_password
 
+
 def generate_otp():
     return str(secrets.randbelow(900000)+ 100000)
 
