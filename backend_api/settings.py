@@ -11,6 +11,23 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+import dj_database_url
+from pathlib import Path
+
+# Security
+SECRET_KEY = os.environ.get('SECRET_KEY')
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+ALLOWED_HOSTS = ['*']  # or specify your render domain
+
+
+# Database
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600
+    )
+}
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -44,7 +61,9 @@ INSTALLED_APPS = [
     # Local
     'api',
     # qurey optimaztion
-    'silk'
+    'silk',
+    #CORS
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -56,6 +75,14 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'silk.middleware.SilkyMiddleware',
+    'corsheaders.middleware.CorsMiddleware',   # ← must be FIRST
+    'django.middleware.common.CommonMiddleware',
+
+    # Static files (Whitenoise handles this)
+
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # ← add this 2nd
+
 ]
 
 ROOT_URLCONF = 'backend_api.urls'
@@ -151,3 +178,28 @@ EMAIL_USE_TLS = True
 
 EMAIL_HOST_USER = "karankharad94@gmail.com"
 EMAIL_HOST_PASSWORD = "ljat hgvw vcug ztim"
+
+# 3. Allow your frontend origin
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5500",     # VS Code Live Server
+    "http://127.0.0.1:5500",    # VS Code Live Server
+    "http://localhost:3000",     # if using local server
+]
+
+CORS_ALLOW_ALL_ORIGINS = True   # allow all during dev
+
+
+# Also allow JWT Authorization header
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'authorization',
+    'content-type',
+    'origin',
+    'x-requested-with',
+]
+
+
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
